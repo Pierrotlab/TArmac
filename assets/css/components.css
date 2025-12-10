@@ -97,7 +97,7 @@
 }
 
 #menu-toggle, .btn-connexion {
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.1s ease-in-out;
     border-radius: 50%;
     width: 40px; 
     height: 40px;
@@ -107,7 +107,7 @@
 }
 
 #menu-toggle:active, .btn-connexion:active {
-    background-color: rgba(0, 0, 0, 0.15); 
+    background-color: rgba(0, 0, 0, 0.3); 
 }
 
 .logo {
