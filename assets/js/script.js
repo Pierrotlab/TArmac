@@ -7,6 +7,7 @@ function initMobileMenu() {
     if (menuToggle && mainNav && menuIcon) {
         menuToggle.addEventListener('click', () => {
             mainNav.classList.toggle('active');
+            applyClickFeedback(menuToggle);
 
             if (mainNav.classList.contains('active')) {
                 menuIcon.classList.remove('fa-bars');
@@ -70,10 +71,55 @@ function handleScrollHeader() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // ... (Votre fonction setTimeout) ...
+
     setTimeout(() => {
         initMobileMenu(); 
         highlightActiveLink();
         loadMembers();
+        
+        // 💡 AJOUT : Gestion du feedback pour les autres éléments cliquables du header
+        
+        // 1. Bouton de Connexion
+        const btnConnexion = document.querySelector('.btn-connexion');
+        if (btnConnexion) {
+            btnConnexion.addEventListener('click', function() {
+                applyClickFeedback(this);
+                // Ajoutez ici votre logique spécifique au bouton de connexion (ex: redirection, modal)
+            });
+        }
+        
     }, 100); 
+    
+    // ... (Votre écouteur de scroll) ...
+    
     window.addEventListener('scroll', handleScrollHeader);
 });
+
+
+function applyClickFeedback(element) {
+    const feedbackColor = 'rgba(0, 0, 0, 0.2)'; // Couleur du flash
+    const duration = 300; // 300 millisecondes (0.3s)
+
+    // 1. Sauvegarder la couleur de transition existante (si elle existe)
+    const originalTransition = element.style.transition;
+    
+    // 2. Appliquer la couleur immédiatement (style inline = priorité absolue)
+    element.style.backgroundColor = feedbackColor;
+    
+    // 3. (Optionnel mais recommandé) Rendre la transition instantanée pour le retour
+    element.style.transition = 'background-color 0.3s ease-out';
+
+    // 4. Retirer la couleur après le délai défini
+    setTimeout(() => {
+        // Supprimer la couleur inline pour que le CSS reprenne le contrôle
+        element.style.backgroundColor = ''; 
+        
+        // Restaurer la transition originale après un petit délai
+        setTimeout(() => {
+            element.style.transition = originalTransition;
+        }, 300); // 300ms pour s'assurer que l'effet est parti avant de restaurer
+        
+    }, duration);
+}
