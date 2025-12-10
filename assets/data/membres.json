@@ -1,0 +1,70 @@
+{
+  "Bureau": [
+    {
+      "id": 1,
+      "prenom": "Valentine",
+      "nom": "Girard",
+      "poste": "Présidente",
+      "photo": "valou.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    },
+    {
+      "id": 2,
+      "prenom": "Titouan",
+      "nom": "Leprêtre",
+      "poste": "Vice-président",
+      "photo": "titouan.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    },
+    {
+      "id": 3,
+      "prenom": "Anna",
+      "nom": "Marzouk",
+      "poste": "Vice-présidente",
+      "photo": "anna.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    },
+    {
+      "id": 4,
+      "prenom": "Solène",
+      "nom": "Bersillon",
+      "poste": "Secrétaire générale",
+      "photo": "solene.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    },
+    {
+      "id": 5,
+      "prenom": "Alban",
+      "nom": "Pothin",
+      "poste": "Trésorier",
+      "photo": "alban.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    },
+    {
+      "id": 6,
+      "prenom": "Margot",
+      "nom": "Fabre",
+      "poste": "Vice-trésorière",
+      "photo": "margot.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    },
+    {
+      "id": 7,
+      "prenom": "Pierre",
+      "nom": "Labrusse",
+      "poste": "Vice-trésorier",
+      "photo": "pierre.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    }
+  ],
+  "Alumni": [
+    {
+      "id": 8,
+      "prenom": "Enzo",
+      "nom": "Piednoir",
+      "poste": "Respo Alumni",
+      "photo": "enzo.jpg",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel fermentum massa. Ut tincidunt sem eros, nec posuere augue vestibulum id. Nulla aliquam iaculis mollis. Nunc gravida felis felis, id congue sem elementum hendrerit. Aliquam tincidunt, nulla id ultricies ullamcorper, justo quam hendrerit velit, sit amet fringilla mauris mi ac nunc."
+    }
+  ]
+}
