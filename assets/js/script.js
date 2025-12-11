@@ -211,10 +211,14 @@ async function navigateTo(url) {
             // 3. Mettre à jour l'URL sans recharger la page
             history.pushState(null, '', url);
             
-            // 4. Réinitialiser la logique qui dépend du nouveau contenu
-            loadMembers(); // Si vous passez à la page 'Membres'
-            // loadAssociations(); // Si vous passez à la page 'Associations' (à créer)
-            
+            if (url.includes('membres.html')) {
+                loadMembers(); 
+            }
+
+            if (url.includes('jeu.html')) {
+                initGame(); 
+            }
+
             // 5. Mettre à jour l'état actif dans la navigation
             highlightActiveLink();
 
@@ -227,5 +231,12 @@ async function navigateTo(url) {
     } catch (error) {
         console.error('Erreur de navigation fluide :', error);
         window.location.href = url; // Rechargement en cas d'échec
+    }
+}
+
+
+function initGame() {
+    if (typeof startGameEngine === 'function') { 
+        startGameEngine(); 
     }
 }
