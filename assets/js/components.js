@@ -1,4 +1,4 @@
-async function loadComponent(componentId, filePath) {
+async function loadComponent(componentId, filePath, callback = null) {
     const placeholder = document.getElementById(componentId);
 
     if (placeholder) {
@@ -7,16 +7,17 @@ async function loadComponent(componentId, filePath) {
             const html = await response.text();
             
             placeholder.innerHTML = html;
+            
+            if (callback) {
+                callback();
+            }
+            
         } catch (error) {
             console.error(`Erreur lors du chargement du composant ${filePath} :`, error);
         }
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadComponent('header-placeholder', 'assets/components/header.html');
-    loadComponent('footer-placeholder', 'assets/components/footer.html');
-});
 
 
 
@@ -93,21 +94,17 @@ async function loadMembers() {
 
 function initMemberInteractivity() {
     document.querySelectorAll('.member-card').forEach(card => {
-        
-        // ===================================
-        // GESTION DU CLIC/TOUCHER (Ouverture permanente/Fermeture)
-        // ===================================
-        card.addEventListener('click', (event) => {
-            
-            // Si l'élément cliqué n'est pas la carte elle-même, on s'assure de cibler le parent
-            // if (event.target !== card) {
-            //     return; // Ignorer les clics sur les enfants si le problème persiste
-            // }
 
-            // Détecte si la carte est active AVANT le basculement
+        card.addEventListener('click', (event) => {
+
+            if (document.getElementById('main-nav')?.classList.contains('active')) {
+                if (typeof closeMobileMenu === 'function') { 
+                    closeMobileMenu();
+                }
+            }
+
             const wasActive = card.classList.contains('active'); 
             
-            // Fermer toutes les autres cartes actives (pour l'effet "une seule carte ouverte")
             document.querySelectorAll('.member-card.active').forEach(otherCard => {
                 // Ferme toutes les cartes SAUF celle qui est cliquée.
                 if (otherCard !== card) {

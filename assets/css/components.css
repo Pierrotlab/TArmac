@@ -13,6 +13,10 @@
     transition: top 0.3s ease-in-out;
 }
 
+.no-scroll {
+    overflow: hidden;
+}
+
 .header-hidden {
     top: -90px !important; 
 }

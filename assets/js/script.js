@@ -6,19 +6,18 @@ function initMobileMenu() {
 
     if (menuToggle && mainNav && menuIcon) {
         menuToggle.addEventListener('click', () => {
-            mainNav.classList.toggle('active');
-            applyClickFeedback(menuToggle);
-
+            
             if (mainNav.classList.contains('active')) {
+                closeMobileMenu(); 
+            } else {
+                mainNav.classList.add('active');
+                document.body.classList.add('no-scroll');
                 menuIcon.classList.remove('fa-bars');
                 menuIcon.classList.add('fa-xmark');
-            } else {
-                menuIcon.classList.remove('fa-xmark');
-                menuIcon.classList.add('fa-bars');
+                menuToggle.setAttribute('aria-expanded', 'true');
             }
-
-            const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true' || false;
-            menuToggle.setAttribute('aria-expanded', !isExpanded);
+            
+            applyClickFeedback(menuToggle);
         });
     }
 }
@@ -69,30 +68,43 @@ function handleScrollHeader() {
 }
 
 
+function initHeaderInteractivity() {
+    const btnConnexion = document.querySelector('.btn-connexion');
+    if (btnConnexion) {
+        btnConnexion.addEventListener('click', function() {
+            applyClickFeedback(this);
+        });
+    }
+
+    initMobileMenu(); 
+}
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // ... (Votre fonction setTimeout) ...
-
-    setTimeout(() => {
-        initMobileMenu(); 
+    loadComponent('header-placeholder', 'assets/components/header.html', () => {
+        initHeaderInteractivity();
         highlightActiveLink();
-        loadMembers();
-        
-        // 💡 AJOUT : Gestion du feedback pour les autres éléments cliquables du header
-        
-        // 1. Bouton de Connexion
-        const btnConnexion = document.querySelector('.btn-connexion');
-        if (btnConnexion) {
-            btnConnexion.addEventListener('click', function() {
-                applyClickFeedback(this);
-                // Ajoutez ici votre logique spécifique au bouton de connexion (ex: redirection, modal)
-            });
-        }
-        
-    }, 100); 
+    });
     
-    // ... (Votre écouteur de scroll) ...
+    loadComponent('footer-placeholder', 'assets/components/footer.html');
+    
+    loadMembers();
+
+    document.addEventListener('click', (event) => {
+        const menuToggle = document.getElementById('menu-toggle');
+        const mainNav = document.getElementById('main-nav');
+        
+        if (mainNav && mainNav.classList.contains('active')) {
+            
+            const isClickInsideMenu = mainNav.contains(event.target);
+            const isClickOnToggle = menuToggle.contains(event.target);
+            
+            if (!isClickInsideMenu && !isClickOnToggle) {
+                closeMobileMenu();
+            }
+        }
+    });
     
     window.addEventListener('scroll', handleScrollHeader);
 });
@@ -122,4 +134,26 @@ function applyClickFeedback(element) {
         }, 300); // 300ms pour s'assurer que l'effet est parti avant de restaurer
         
     }, duration);
+}
+
+function closeMobileMenu() {
+    const mainNav = document.getElementById('main-nav');
+    const menuToggle = document.getElementById('menu-toggle');
+    const menuIcon = document.getElementById('menu-icon');
+
+    if (mainNav && mainNav.classList.contains('active')) {
+        mainNav.classList.remove('active');
+        document.body.classList.remove('no-scroll');
+        
+        // Remettre l'icône à 'fa-bars' (menu)
+        if (menuIcon) {
+            menuIcon.classList.remove('fa-xmark');
+            menuIcon.classList.add('fa-bars');
+        }
+        
+        // Mettre à jour l'état ARIA
+        if (menuToggle) {
+            menuToggle.setAttribute('aria-expanded', 'false');
+        }
+    }
 }
