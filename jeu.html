@@ -24,7 +24,7 @@
     <h1 class="page-title">Jouez avec le BDE !</h1>
 
     <!-- GAME START -->
-    <section id="game-container">
+    <div id="game-container">
       <!-- canvas doit avoir des attributs width/height pour éviter 0x0 -->
       <canvas id="game-canvas" width="360" height="640" aria-label="Jeu Avoid the Birds"></canvas>
 
@@ -61,6 +61,13 @@
   <script src="assets/js/components.js"></script>
   <script src="assets/js/script.js"></script>
   <script src="assets/js/game.js"></script>
-  <script>window.onload = startGameEngine;</script>
+  <script>
+    // Lance le processus après que le DOM soit complètement chargé (pour un F5)
+    document.addEventListener("DOMContentLoaded", () => {
+        if (typeof window.startGameEngine === 'function') {
+            window.startGameEngine(); 
+        }
+    });
+</script>
 </body>
 </html>

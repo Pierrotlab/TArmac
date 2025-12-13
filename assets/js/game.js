@@ -1,22 +1,22 @@
 (function () {
-  // CONFIG
+  // ================= CONFIG =================
   const ASSETS_PATH = "assets/images/jeu/";
   const BASE_W = 360;
   const BASE_H = 640;
 
-  // PHYSICS
-  const GRAVITY = 0.05;
-  const FLAP = -4;
-  const MAX_VY = 4;
+  // ================= PHYSICS =================
+  const GRAVITY = 0.1;
+  const FLAP = -5;
+  const MAX_VY = 8;
 
-  // SPAWN
-  const SPAWN_INTERVAL = 1200;
+  // ================= SPAWN =================
+  const BASE_SPAWN_INTERVAL = 1400;
 
-  // DOM
+  // ================= DOM =================
   let canvas, ctx, container;
   let scale = 1;
 
-  // STATE
+  // ================= STATE =================
   let lastTime = 0;
   let running = false;
   let inMenu = true;
@@ -26,158 +26,238 @@
   let spawnAcc = 0;
   let elapsed = 0;
 
-  // UI
+  // ================= UI =================
   let menuEl, playBtn, planeBtns, chronoEl;
 
-  // IMAGES
+  // ================= IMAGES =================
   const images = {};
   const assets = [
     ["bg", ASSETS_PATH + "fond_ciel.gif"],
-    ["title", ASSETS_PATH + "Title.gif"],
-    ["mouette", ASSETS_PATH + "mouette.gif"],
-
+    ["mouette", ASSETS_PATH + "mouette.png"],
     ["biplan", ASSETS_PATH + "biplan.gif"],
-    ["biplan_up", ASSETS_PATH + "biplan_haut.gif"],
-    ["biplan_down", ASSETS_PATH + "biplan_bas.gif"],
-
     ["hydravion", ASSETS_PATH + "hydravion.gif"],
-    ["hydravion_up", ASSETS_PATH + "hydravion_haut.gif"],
-    ["hydravion_down", ASSETS_PATH + "hydravion_bas.gif"],
-
     ["chasse", ASSETS_PATH + "chasse.gif"],
-    ["chasse_up", ASSETS_PATH + "chasse_haut.gif"],
-    ["chasse_down", ASSETS_PATH + "chasse_bas.gif"],
-
-    ["guerre", ASSETS_PATH + "guerre.gif"],
-    ["guerre_up", ASSETS_PATH + "guerre_haut.gif"],
-    ["guerre_down", ASSETS_PATH + "guerre_bas.gif"]
+    ["guerre", ASSETS_PATH + "guerre.gif"]
   ];
 
   let selectedPlaneKey = "biplan";
-  let loopId = null; // id du requestAnimationFrame en cours
+  let loopId = null;
+  let initialized = false;
 
-  // ---------------- PRELOAD ----------------
+  // ================= HANDLERS =================
+  const handlers = {
+    onPlayClick: null,
+    onPlaneClick: null,
+    onCanvasPointerDown: null,
+    onKeyDown: null,
+    onResize: null,
+    onPageHide: null,
+    onVisibilityChange: null
+  };
+
+  // ================= PRELOAD =================
   function preload() {
     return Promise.all(
-      assets.map(([key, src]) => {
-        return new Promise(resolve => {
-          const img = new Image();
-          img.onload = () => { images[key] = img; resolve(); };
-          img.onerror = () => { images[key] = null; resolve(); };
-          img.src = src;
-        });
-      })
+      assets.map(([key, src]) => new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => { images[key] = img; resolve(); };
+        img.onerror = () => { images[key] = null; resolve(); };
+        img.src = src;
+      }))
     );
   }
 
-  // ---------------- SETUP DOM ----------------
+  // ================= WAIT STYLES =================
+  function waitForStylesAndFonts(timeoutMs = 1500) {
+    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+    const promises = links.map(link => new Promise(resolve => {
+      if (link.sheet) return resolve();
+      link.onload = link.onerror = () => resolve();
+    }));
+    const fonts = document.fonts?.ready || Promise.resolve();
+    return Promise.race([
+      Promise.all([...promises, fonts]),
+      new Promise(r => setTimeout(r, timeoutMs))
+    ]);
+  }
+
+  // ================= SETUP DOM =================
   function setupDOM() {
+    container = document.getElementById("game-container");
+    if (!container) return false;
+
     canvas = document.getElementById("game-canvas");
     ctx = canvas.getContext("2d");
-    container = document.getElementById("game-container");
 
     menuEl = document.getElementById("menu");
     playBtn = document.getElementById("play-btn");
     planeBtns = Array.from(document.querySelectorAll(".plane-option"));
 
-    // Chrono
-    chronoEl = document.createElement("div");
-    chronoEl.id = "chronotext";
-    chronoEl.textContent = "00:00";
-    container.appendChild(chronoEl);
+    chronoEl = document.getElementById("chronotext");
+    if (!chronoEl) {
+      chronoEl = document.createElement("div");
+      chronoEl.id = "chronotext";
+      chronoEl.textContent = "00:00";
+      container.appendChild(chronoEl);
+    }
 
-    container.style.position = "relative";
+    removeHandlers();
 
-    // Events
-    playBtn.addEventListener("click", startGame);
-    planeBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        planeBtns.forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        selectedPlaneKey = btn.dataset.plane;
-      });
-    });
+    handlers.onPlayClick = startGame;
+    playBtn?.addEventListener("click", handlers.onPlayClick);
 
-    canvas.addEventListener("pointerdown", e => {
+    handlers.onPlaneClick = e => {
+      planeBtns.forEach(b => b.classList.remove("selected"));
+      e.currentTarget.classList.add("selected");
+      selectedPlaneKey = e.currentTarget.dataset.plane;
+    };
+    planeBtns.forEach(b => b.addEventListener("click", handlers.onPlaneClick));
+
+    handlers.onCanvasPointerDown = e => {
       e.preventDefault();
       if (inMenu) startGame();
       else flap();
-    });
+    };
+    canvas.addEventListener("pointerdown", handlers.onCanvasPointerDown);
 
-    window.addEventListener("keydown", e => {
+    handlers.onKeyDown = e => {
       if (e.code === "Space" || e.code === "ArrowUp") {
         e.preventDefault();
         if (inMenu) startGame();
         else flap();
       }
-    });
+    };
+    window.addEventListener("keydown", handlers.onKeyDown);
+
+    handlers.onResize = resize;
+    window.addEventListener("resize", handlers.onResize);
+
+    handlers.onPageHide = () => {
+      if (loopId) cancelAnimationFrame(loopId);
+      loopId = null;
+    };
+    window.addEventListener("pagehide", handlers.onPageHide);
+
+    handlers.onVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && loopId) {
+        cancelAnimationFrame(loopId);
+        loopId = null;
+      }
+    };
+    document.addEventListener("visibilitychange", handlers.onVisibilityChange);
+
+    return true;
   }
 
-  // ---------------- RESIZE ----------------
+  function removeHandlers() {
+    try {
+      playBtn?.removeEventListener("click", handlers.onPlayClick);
+      planeBtns?.forEach(b => b.removeEventListener("click", handlers.onPlaneClick));
+      canvas?.removeEventListener("pointerdown", handlers.onCanvasPointerDown);
+    } catch {}
+    window.removeEventListener("keydown", handlers.onKeyDown);
+    window.removeEventListener("resize", handlers.onResize);
+    window.removeEventListener("pagehide", handlers.onPageHide);
+    document.removeEventListener("visibilitychange", handlers.onVisibilityChange);
+    Object.keys(handlers).forEach(k => handlers[k] = null);
+  }
+
+  function destroy() {
+    if (loopId) cancelAnimationFrame(loopId);
+    loopId = null;
+    removeHandlers();
+    lastTime = 0;
+    running = false;
+    inMenu = true;
+    player = null;
+    mouettes = [];
+    bgX = 0;
+    spawnAcc = 0;
+    elapsed = 0;
+    initialized = false;
+  }
+
+  // ================= RESIZE =================
   function resize() {
-    const clientW = container.clientWidth || window.innerWidth;
-    scale = clientW / BASE_W;
-
-    const cssW = Math.round(BASE_W * scale);
-    const cssH = Math.round(BASE_H * scale);
-
-    canvas.style.width = cssW + "px";
-    canvas.style.height = cssH + "px";
-
-    const ratio = window.devicePixelRatio || 1;
-    canvas.width = BASE_W * ratio;
-    canvas.height = BASE_H * ratio;
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const w = container.clientWidth || BASE_W;
+    scale = w / BASE_W;
+    canvas.style.width = BASE_W * scale + "px";
+    canvas.style.height = BASE_H * scale + "px";
+    canvas.width = BASE_W;
+    canvas.height = BASE_H;
   }
 
-  // ---------------- PLAYER ----------------
+  // ================= PLAYER =================
   function createPlayer() {
     return {
-      x: BASE_W * 0.65, // plus à droite
+      x: BASE_W * 0.7,
       y: BASE_H * 0.45,
       w: 72,
       h: 54,
       vy: 0,
-      alive: true,
-      frame: "normal"
+      alive: true
     };
   }
 
   function flap() {
     if (!player || !player.alive) return;
     player.vy = FLAP;
-    player.frame = "up";
-    setTimeout(() => {
-      if (player) player.frame = "normal";
-    }, 150);
   }
 
-  // ---------------- MOUETTES ----------------
+  // ================= MOUETTES =================
   function spawnMouette() {
-    const y = 60 + Math.random() * (BASE_H - 120);
-    const x = -40;
-    const speed = 2.3 + Math.random() * 1.4;
-    const size = (28 + Math.random() * 22) * 1.2; // 20% plus grand
-    mouettes.push({ x, y, w: size, h: size, speed });
+    const difficulty = Math.min(1, elapsed / 60000);
+    const spread = 200 - difficulty * 120;
+    const baseY = player ? player.y : BASE_H / 2;
+
+    const y = Math.max(40, Math.min(BASE_H - 40, baseY + (Math.random() - 0.5) * spread));
+
+    mouettes.push({
+      x: -80,
+      y,
+      w: 64*0.7,
+      h: 64*0.7,
+      speed: 2.6 + difficulty * 2,
+      frame: 0
+    });
   }
 
   function updateMouettes(dt) {
-    for (let i = mouettes.length - 1; i >= 0; i--) {
-      const m = mouettes[i];
-      m.x += m.speed * (dt / (1000 / 60));
-      if (m.x - m.w / 2 > BASE_W + 40) mouettes.splice(i, 1);
-    }
+    mouettes.forEach(m => {
+      m.x += m.speed * dt / 16;
+      m.frame = (m.frame + dt / 100) % 4;
+    });
+    mouettes = mouettes.filter(m => m.x < BASE_W + 100);
   }
 
-  // ---------------- COLLISIONS ----------------
+  // ================= COLLISIONS =================
   function overlap(a, b) {
-    return !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
+    const shrink = 0.6;
+    const pa = {
+      x: a.x + a.w * (1 - shrink) / 2,
+      y: a.y + a.h * (1 - shrink) / 2,
+      w: a.w * shrink,
+      h: a.h * shrink
+    };
+    return !(pa.x + pa.w < b.x || pa.x > b.x + b.w || pa.y + pa.h < b.y || pa.y > b.y + b.h);
   }
 
   function checkCollisions() {
-    const pb = { x: player.x - 14, y: player.y - player.h / 2, w: player.w, h: player.h };
+    if (!player) return;
+    const pb = {
+      x: player.x - player.w / 2,
+      y: player.y - player.h / 2,
+      w: player.w,
+      h: player.h
+    };
+
     for (const m of mouettes) {
-      const mb = { x: m.x - m.w / 2, y: m.y - m.h / 2, w: m.w, h: m.h };
+      const mb = {
+        x: m.x - m.w / 2,
+        y: m.y - m.h / 2,
+        w: m.w,
+        h: m.h
+      };
       if (overlap(pb, mb)) {
         player.alive = false;
         running = false;
@@ -187,49 +267,41 @@
     }
   }
 
-  // ---------------- DRAW ----------------
-  function drawBackground() {
-    const bg = images.bg;
-    if (bg) {
-      if (running) {
-        bgX += 0.35; // inversé : défile vers la droite
-        if (bgX >= BASE_W) bgX = 0;
-      }
-      ctx.drawImage(bg, bgX, 0, BASE_W, BASE_H);
-      ctx.drawImage(bg, bgX - BASE_W, 0, BASE_W, BASE_H);
-    } else {
-      ctx.fillStyle = "#A9CCE3";
-      ctx.fillRect(0, 0, BASE_W, BASE_H);
-    }
+  // ================= DRAW =================
+  function drawBackground(dt) {
+  const bg = images.bg;
+  if (!bg) return;
+
+  const scaleH = BASE_H / bg.height;
+  const bgWidth = bg.width * scaleH;
+
+  // défiler vers la droite
+  bgX += 0.35 * dt / 16;
+  if (bgX >= bgWidth) bgX = 0;
+
+  // commencer le dessin à -bgWidth + bgX pour que l'image précédente couvre le vide
+  for (let x = -bgWidth + bgX; x < BASE_W; x += bgWidth) {
+    ctx.drawImage(bg, x, 0, bgWidth, BASE_H);
   }
+}
 
   function drawPlayer() {
-    if (!player) return;
-
-    const key =
-      player.frame === "up" ? `${selectedPlaneKey}_up` :
-      player.frame === "down" ? `${selectedPlaneKey}_down` :
-      selectedPlaneKey;
-
-    const img = images[key] || images[selectedPlaneKey];
-    if (!img) return;
+    const img = images[selectedPlaneKey];
+    if (!img || !player) return;
 
     ctx.save();
-    const tilt = Math.max(-0.45, Math.min(0.45, -player.vy / 18));
     ctx.translate(player.x, player.y);
-    ctx.rotate(tilt);
-
-    // simulate "nose up" with small offset
-    let offsetY = player.frame === "up" ? -6 : 0;
-    ctx.drawImage(img, -player.w / 2, -player.h / 2 + offsetY, player.w, player.h);
+    ctx.rotate(Math.max(-0.45, Math.min(0.45, -player.vy / 12)));
+    ctx.drawImage(img, -player.w / 2, -player.h / 2, player.w, player.h);
     ctx.restore();
   }
 
   function drawMouettes() {
     const img = images.mouette;
-    for (const m of mouettes) {
+    if (!img) return;
+    mouettes.forEach(m => {
       ctx.drawImage(img, m.x - m.w / 2, m.y - m.h / 2, m.w, m.h);
-    }
+    });
   }
 
   function drawHUD() {
@@ -239,44 +311,41 @@
   function formatTime(ms) {
     const s = Math.floor(ms / 1000);
     const m = Math.floor(s / 60);
-    return String(m).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+    return `${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
   }
 
-  // ---------------- MAIN LOOP ----------------
+  // ================= LOOP =================
   function loop(ts) {
-    loopId = requestAnimationFrame(loop); // on stocke l'id
-
     if (!lastTime) lastTime = ts;
     const dt = ts - lastTime;
     lastTime = ts;
 
     ctx.clearRect(0, 0, BASE_W, BASE_H);
-    drawBackground();
+    drawBackground(dt);
 
-    if (running && player && player.alive) {
-      // physics
+    if (running && player?.alive) {
       player.vy += GRAVITY;
-      if (player.vy > MAX_VY) player.vy = MAX_VY;
       player.y += player.vy;
 
-      // clamp
-      const half = player.h / 2;
-      if (player.y < half) {
-        player.y = half;
+      // nouvelles limites
+      const TOP_LIMIT = -20;       // limite supérieure plus haut
+      const BOTTOM_LIMIT = BASE_H + 50; // limite inférieure plus bas
+
+      if (player.y < TOP_LIMIT + player.h / 2) {
+        player.y = TOP_LIMIT + player.h / 2;
         player.vy = 0;
       }
-      if (player.y > BASE_H - half) {
-        player.y = BASE_H - half;
+
+      if (player.y > BOTTOM_LIMIT - player.h / 2) {
+        player.y = BOTTOM_LIMIT - player.h / 2;
         player.vy = 0;
         running = false;
         showGameOver();
       }
 
-      if (player.vy > 4) player.frame = "down";
-
-      // spawn
       spawnAcc += dt;
-      if (spawnAcc > SPAWN_INTERVAL) {
+      const interval = BASE_SPAWN_INTERVAL - Math.min(800, elapsed / 80);
+      if (spawnAcc > interval) {
         spawnAcc = 0;
         spawnMouette();
       }
@@ -289,37 +358,32 @@
     drawMouettes();
     drawPlayer();
     drawHUD();
-  }
 
-  // ---------------- FLOW ----------------
-  function startGame() {
-    // cancel previous loop to avoid accumulation
-    if (loopId) cancelAnimationFrame(loopId);
-    lastTime = 0;
-    spawnAcc = 0;
-    elapsed = 0;
-    bgX = 0;
-
-    player = createPlayer();
-    mouettes = [];
-
-    // Remove any previous Game Over overlay
-    const oldGO = container.querySelector(".go-overlay");
-    if (oldGO) oldGO.remove();
-
-    menuEl.style.display = "none";
-    running = true;
-    inMenu = false;
     loopId = requestAnimationFrame(loop);
   }
 
+  // ================= FLOW =================
+  function startGame() {
+    lastTime = 0;
+    elapsed = 0;
+    spawnAcc = 0;
+    bgX = 0;
+    player = createPlayer();
+    mouettes = [];
+    menuEl.style.display = "none";
+    running = true;
+    inMenu = false;
+  }
+
   function showGameOver() {
+    if (container.querySelector(".go-overlay")) return;
+
     const go = document.createElement("div");
     go.className = "go-overlay";
 
     const title = document.createElement("div");
     title.className = "go-title";
-    title.textContent = "Perdu, vous avez percuté une mouette !";
+    title.textContent = "Perdu !";
     go.appendChild(title);
 
     const time = document.createElement("div");
@@ -353,19 +417,27 @@
     running = false;
     player = null;
     mouettes = [];
-    menuEl.style.display = "flex";
+    if (menuEl) menuEl.style.display = "flex";
+    if (!loopId) loopId = requestAnimationFrame(loop);
   }
 
-  // ---------------- PUBLIC INIT ----------------
-  window.startGameEngine = async function () {
-    setupDOM();
-    await preload();
-    resize();
-    window.addEventListener("resize", resize);
+  // ================= PUBLIC INIT =================
+  async function startGameEngine() {
+    destroy();
 
+    if (!initialized) {
+      initialized = true;
+      await waitForStylesAndFonts();
+      await preload();
+    }
+
+    setupDOM();
+    resize();
     menuEl.style.display = "flex";
     inMenu = true;
 
-    loopId = requestAnimationFrame(loop);
-  };
+    if (!loopId) loopId = requestAnimationFrame(loop);
+  }
+
+  window.startGameEngine = startGameEngine;
 })();

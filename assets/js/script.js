@@ -216,7 +216,7 @@ async function navigateTo(url) {
             }
 
             if (url.includes('jeu.html')) {
-                initGame(); 
+                initGame();
             }
 
             // 5. Mettre à jour l'état actif dans la navigation
@@ -236,7 +236,8 @@ async function navigateTo(url) {
 
 
 function initGame() {
-    if (typeof startGameEngine === 'function') { 
-        startGameEngine(); 
+    if (typeof window.startGameEngine === 'function') {
+        // Appel immédiat. Le moteur (game.js) se chargera de l'attente du CSS.
+        window.startGameEngine();
     }
 }
