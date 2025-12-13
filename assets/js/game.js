@@ -5,9 +5,9 @@
   const BASE_H = 640;
 
   // ================= PHYSICS =================
-  const GRAVITY = 0.1;
-  const FLAP = -5;
-  const MAX_VY = 8;
+  const GRAVITY = 0.7;
+  const FLAP = -12;
+  const MAX_VY = 5;
 
   // ================= SPAWN =================
   const BASE_SPAWN_INTERVAL = 1400;
