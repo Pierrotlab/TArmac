@@ -1,3 +1,6 @@
+/**
+ * GESTION DE LA NAVIGATION ET DES COMPOSANTS
+ */
 
 function initMobileMenu() {
     const menuToggle = document.getElementById('menu-toggle');
@@ -6,7 +9,6 @@ function initMobileMenu() {
 
     if (menuToggle && mainNav && menuIcon) {
         menuToggle.addEventListener('click', () => {
-            
             if (mainNav.classList.contains('active')) {
                 closeMobileMenu(); 
             } else {
@@ -16,30 +18,19 @@ function initMobileMenu() {
                 menuIcon.classList.add('fa-xmark');
                 menuToggle.setAttribute('aria-expanded', 'true');
             }
-            
             applyClickFeedback(menuToggle);
         });
     }
 }
 
-
 function highlightActiveLink() {
     const currentPath = window.location.pathname;
-    let currentPageFile = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+    let currentPageFile = currentPath.substring(currentPath.lastIndexOf('/') + 1) || 'index.html';
     
-    if (currentPageFile === '' || currentPageFile === '/') {
-        currentPageFile = 'index.html'; 
-    }
-
     const navLinks = document.querySelectorAll('#main-nav ul li a');
 
-    // 💡 NOUVEAUTÉ : D'abord, retirer la classe active de tous les liens
     navLinks.forEach(link => {
         link.classList.remove('active-page');
-    });
-
-    // Ensuite, appliquer la classe active uniquement au lien correspondant
-    navLinks.forEach(link => {
         const linkFile = link.getAttribute('href'); 
         if (linkFile === currentPageFile) {
             link.classList.add('active-page');
@@ -47,32 +38,24 @@ function highlightActiveLink() {
     });
 }
 
-
-
 let lastScrollY = 0;
 let mainHeader = null; 
 
 function handleScrollHeader() {
     if (!mainHeader) {
-        mainHeader = document.getElementById('header-placeholder') 
-                   ? document.getElementById('header-placeholder').querySelector('#main-header') 
-                   : null;
-
+        const placeholder = document.getElementById('header-placeholder');
+        mainHeader = placeholder ? placeholder.querySelector('#main-header') : null;
         if (!mainHeader) return;
     }
 
     const currentScrollY = window.scrollY;
-
     if (currentScrollY > lastScrollY && currentScrollY > 100) { 
         mainHeader.classList.add('header-hidden');
-    } 
-    else if (currentScrollY < lastScrollY) {
+    } else if (currentScrollY < lastScrollY) {
         mainHeader.classList.remove('header-hidden');
     }
-
     lastScrollY = currentScrollY;
 }
-
 
 function initHeaderInteractivity() {
     const btnConnexion = document.querySelector('.btn-connexion');
@@ -87,48 +70,44 @@ function initHeaderInteractivity() {
     const logoLink = document.querySelector('.header-left a'); 
     if (logoLink) {
         logoLink.addEventListener('click', function(event) {
-            event.preventDefault(); // <-- Stop au rechargement classique
+            event.preventDefault();
             applyClickFeedback(this.querySelector('.logo') || this);
-            navigateTo(logoLink.getAttribute('href')); // <-- Navigation fluide
+            navigateTo(logoLink.getAttribute('href'));
         });
     }
 }
 
-
-
 document.addEventListener('DOMContentLoaded', () => {
+    // Chargement du Header
     loadComponent('header-placeholder', 'assets/components/header.html', () => {
         initHeaderInteractivity();
         highlightActiveLink();
 
+        // Attacher la navigation fluide aux liens du menu
         document.querySelectorAll('#main-nav a').forEach(link => {
-        link.addEventListener('click', (event) => {
-            const url = link.getAttribute('href');
-            
-            // Si c'est un lien interne (pas un lien externe ou un # ancre)
-            if (url && !url.startsWith('#') && !url.startsWith('http')) { 
-                event.preventDefault(); // Bloque la navigation classique
-                navigateTo(url);        // Utilise la navigation fluide
-                closeMobileMenu();      // Ferme le menu après le clic
-            }
+            link.addEventListener('click', (event) => {
+                const url = link.getAttribute('href');
+                if (url && !url.startsWith('#') && !url.startsWith('http')) { 
+                    event.preventDefault();
+                    navigateTo(url);
+                    closeMobileMenu();
+                }
+            });
         });
-    });
     });
     
     loadComponent('footer-placeholder', 'assets/components/footer.html');
     
-    loadMembers();
+    // Initialisation au premier chargement (si on arrive direct sur membres ou jeu)
+    if (window.location.pathname.includes('membres.html')) loadMembers();
+    if (window.location.pathname.includes('jeu.html')) initGame();
 
+    // Fermeture du menu mobile au clic extérieur
     document.addEventListener('click', (event) => {
         const menuToggle = document.getElementById('menu-toggle');
         const mainNav = document.getElementById('main-nav');
-        
         if (mainNav && mainNav.classList.contains('active')) {
-            
-            const isClickInsideMenu = mainNav.contains(event.target);
-            const isClickOnToggle = menuToggle.contains(event.target);
-            
-            if (!isClickInsideMenu && !isClickOnToggle) {
+            if (!mainNav.contains(event.target) && !menuToggle.contains(event.target)) {
                 closeMobileMenu();
             }
         }
@@ -137,31 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', handleScrollHeader);
 });
 
-
 function applyClickFeedback(element) {
-    const feedbackColor = 'rgba(0, 0, 0, 0.2)'; // Couleur du flash
-    const duration = 300; // 300 millisecondes (0.3s)
-
-    // 1. Sauvegarder la couleur de transition existante (si elle existe)
+    const feedbackColor = 'rgba(0, 0, 0, 0.2)';
     const originalTransition = element.style.transition;
-    
-    // 2. Appliquer la couleur immédiatement (style inline = priorité absolue)
     element.style.backgroundColor = feedbackColor;
-    
-    // 3. (Optionnel mais recommandé) Rendre la transition instantanée pour le retour
     element.style.transition = 'background-color 0.3s ease-out';
 
-    // 4. Retirer la couleur après le délai défini
     setTimeout(() => {
-        // Supprimer la couleur inline pour que le CSS reprenne le contrôle
         element.style.backgroundColor = ''; 
-        
-        // Restaurer la transition originale après un petit délai
         setTimeout(() => {
             element.style.transition = originalTransition;
-        }, 300); // 300ms pour s'assurer que l'effet est parti avant de restaurer
-        
-    }, duration);
+        }, 300);
+    }, 300);
 }
 
 function closeMobileMenu() {
@@ -172,25 +138,17 @@ function closeMobileMenu() {
     if (mainNav && mainNav.classList.contains('active')) {
         mainNav.classList.remove('active');
         document.body.classList.remove('no-scroll');
-        
-        // Remettre l'icône à 'fa-bars' (menu)
         if (menuIcon) {
             menuIcon.classList.remove('fa-xmark');
             menuIcon.classList.add('fa-bars');
         }
-        
-        // Mettre à jour l'état ARIA
-        if (menuToggle) {
-            menuToggle.setAttribute('aria-expanded', 'false');
-        }
+        if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
     }
 }
-
 
 async function navigateTo(url) {
     const mainContent = document.getElementById('main-content');
     if (!mainContent) {
-        // Fallback: Si le conteneur n'existe pas, on recharge normalement
         window.location.href = url;
         return;
     }
@@ -199,45 +157,41 @@ async function navigateTo(url) {
         const response = await fetch(url);
         const html = await response.text();
         
-        // 1. Parser le contenu et extraire uniquement la nouvelle section principale
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
         const newMainContent = tempDiv.querySelector('#main-content');
 
         if (newMainContent) {
-            // 2. Remplacer l'ancien contenu par le nouveau
+            // Remplacement du contenu
             mainContent.innerHTML = newMainContent.innerHTML;
             
-            // 3. Mettre à jour l'URL sans recharger la page
+            // Forcer le recalcul du layout (fixe les bugs de rendu)
+            void mainContent.offsetHeight;
+
             history.pushState(null, '', url);
             
-            if (url.includes('membres.html')) {
-                loadMembers(); 
-            }
+            // Déclenchement des scripts spécifiques
+            if (url.includes('membres.html')) loadMembers(); 
+            if (url.includes('jeu.html')) initGame();
 
-            if (url.includes('jeu.html')) {
-                initGame();
-            }
-
-            // 5. Mettre à jour l'état actif dans la navigation
             highlightActiveLink();
-
-            // 6. Remonter en haut
             window.scrollTo(0, 0); 
         } else {
-             window.location.href = url; // Rechargement en cas d'erreur de parsing
+             window.location.href = url;
         }
-
     } catch (error) {
         console.error('Erreur de navigation fluide :', error);
-        window.location.href = url; // Rechargement en cas d'échec
+        window.location.href = url;
     }
 }
 
-
-function initGame() {
+function initGame() {    
     if (typeof window.startGameEngine === 'function') {
-        // Appel immédiat. Le moteur (game.js) se chargera de l'attente du CSS.
         window.startGameEngine();
+    } else {
+        const script = document.createElement('script');
+        script.src = 'assets/js/game.js';
+        script.onload = () => window.startGameEngine();
+        document.body.appendChild(script);
     }
 }

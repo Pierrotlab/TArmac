@@ -24,10 +24,10 @@
   let mouettes = [];
   let bgX = 0;
   let spawnAcc = 0;
-  let elapsed = 0;
+  let score = 0;
 
   // ================= UI =================
-  let menuEl, playBtn, planeBtns, chronoEl;
+  let menuEl, playBtn, planeBtns, scoreEl;
 
   // ================= IMAGES =================
   const images = {};
@@ -67,19 +67,6 @@
     );
   }
 
-  // ================= WAIT STYLES =================
-  function waitForStylesAndFonts(timeoutMs = 1500) {
-    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
-    const promises = links.map(link => new Promise(resolve => {
-      if (link.sheet) return resolve();
-      link.onload = link.onerror = () => resolve();
-    }));
-    const fonts = document.fonts?.ready || Promise.resolve();
-    return Promise.race([
-      Promise.all([...promises, fonts]),
-      new Promise(r => setTimeout(r, timeoutMs))
-    ]);
-  }
 
   // ================= SETUP DOM =================
   function setupDOM() {
@@ -93,12 +80,12 @@
     playBtn = document.getElementById("play-btn");
     planeBtns = Array.from(document.querySelectorAll(".plane-option"));
 
-    chronoEl = document.getElementById("chronotext");
-    if (!chronoEl) {
-      chronoEl = document.createElement("div");
-      chronoEl.id = "chronotext";
-      chronoEl.textContent = "00:00";
-      container.appendChild(chronoEl);
+    scoreEl = document.getElementById("scoretext");
+    if (!scoreEl) {
+      scoreEl = document.createElement("div");
+      scoreEl.id = "scoretext";
+      scoreEl.textContent = "0";
+      container.appendChild(scoreEl);
     }
 
     removeHandlers();
@@ -304,32 +291,23 @@
     });
   }
 
-  function drawHUD() {
-    chronoEl.textContent = formatTime(elapsed);
-  }
-
-  function formatTime(ms) {
-    const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    return `${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-  }
-
   // ================= LOOP =================
   function loop(ts) {
     if (!lastTime) lastTime = ts;
     const dt = ts - lastTime;
     lastTime = ts;
 
+    const speedCorr = dt / 16.67;
+
     ctx.clearRect(0, 0, BASE_W, BASE_H);
     drawBackground(dt);
 
-    if (running && player?.alive) {
-      player.vy += GRAVITY;
-      player.y += player.vy;
+    if (running && player && player.alive) {
+      player.vy += GRAVITY*speedCorr;
+      player.y += player.vy*speedCorr;
 
-      // nouvelles limites
-      const TOP_LIMIT = -20;       // limite supérieure plus haut
-      const BOTTOM_LIMIT = BASE_H + 50; // limite inférieure plus bas
+      const TOP_LIMIT = -20;
+      const BOTTOM_LIMIT = BASE_H + 50;
 
       if (player.y < TOP_LIMIT + player.h / 2) {
         player.y = TOP_LIMIT + player.h / 2;
@@ -350,14 +328,15 @@
         spawnMouette();
       }
 
+      score += dt*0.01; 
+      if (scoreEl) scoreEl.textContent = Math.floor(score);
+
       updateMouettes(dt);
       checkCollisions();
-      elapsed += dt;
     }
 
     drawMouettes();
     drawPlayer();
-    drawHUD();
 
     loopId = requestAnimationFrame(loop);
   }
@@ -365,12 +344,16 @@
   // ================= FLOW =================
   function startGame() {
     lastTime = 0;
-    elapsed = 0;
+    score = 0;
     spawnAcc = 0;
     bgX = 0;
     player = createPlayer();
     mouettes = [];
     menuEl.style.display = "none";
+    if(scoreEl){
+      scoreEl.textContent= "0";
+      scoreEl.style.display = "block";
+    }
     running = true;
     inMenu = false;
   }
@@ -386,10 +369,10 @@
     title.textContent = "Perdu !";
     go.appendChild(title);
 
-    const time = document.createElement("div");
-    time.className = "go-time";
-    time.textContent = "Temps : " + formatTime(elapsed);
-    go.appendChild(time);
+    const scoreDisplay = document.createElement("div");
+    scoreDisplay.className = "go-score";
+    scoreDisplay.textContent = "Score : " + Math.floor(score);
+    go.appendChild(scoreDisplay);
 
     const btns = document.createElement("div");
     btns.style.display = "flex";
@@ -418,25 +401,36 @@
     player = null;
     mouettes = [];
     if (menuEl) menuEl.style.display = "flex";
+    if (scoreEl) scoreEl.style.display = "none";
     if (!loopId) loopId = requestAnimationFrame(loop);
   }
 
   // ================= PUBLIC INIT =================
+
   async function startGameEngine() {
-    destroy();
+    // 1. On nettoie tout ce qui pourrait rester d'une session précédente
+    destroy(); 
 
-    if (!initialized) {
-      initialized = true;
-      await waitForStylesAndFonts();
-      await preload();
+    // 2. IMPORTANT : On force setupDOM() à chaque fois 
+    // car le HTML vient d'être ré-injecté par navigateTo
+    if (setupDOM()) {        
+        // 3. On s'assure que les images sont là
+        if (Object.keys(images).length === 0) {
+            await preload();
+        }
+
+        // 4. On lance l'affichage
+        resize();
+        if (menuEl) menuEl.style.display = "flex";
+        inMenu = true;
+
+        // 5. On lance la boucle de rendu si elle n'est pas active
+        if (!loopId) {
+            loopId = requestAnimationFrame(loop);
+        }
+    } else {
+        console.error("Impossible de trouver les éléments du jeu (canvas, container...)");
     }
-
-    setupDOM();
-    resize();
-    menuEl.style.display = "flex";
-    inMenu = true;
-
-    if (!loopId) loopId = requestAnimationFrame(loop);
   }
 
   window.startGameEngine = startGameEngine;

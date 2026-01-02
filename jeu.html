@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="#154360" />
   <meta name="theme-color" content="#154360" />
   <link rel="icon" type="image/png" href="assets/images/logo_ico.png" />
-  <title>Jeu - BDE TArmac ENSTA Paris</title>
+  <title>BDE TArmac ENSTA Paris</title>
 
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
@@ -15,13 +15,13 @@
 
   <script src="https://kit.fontawesome.com/5a52e611a4.js" crossorigin="anonymous"></script>
   <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <div id="header-placeholder"></div>
 
   <main id="main-content">
-    <h1 class="page-title">Jouez avec le BDE !</h1>
 
     <!-- GAME START -->
     <div id="game-container">
@@ -30,7 +30,7 @@
 
       <!-- Menu overlay (géré par le JS) -->
       <div id="menu" class="menu-overlay">
-        <img id="menu-title" src="assets/images/jeu/Title.gif" alt="Title" />
+        <img id="menu-title" src="assets/images/jeu/nom_logo.png" alt="Title" />
         <div id="plane-select" class="plane-select">
           <button class="plane-option selected" data-plane="biplan" title="Biplan">
             <img src="assets/images/jeu/biplan.gif" alt="biplan">
@@ -47,7 +47,7 @@
         </div>
 
         <button id="play-btn" class="btn-play">JOUER</button>
-        <p class="hint">Tapez n'importe où pour faire monter l'avion</p>
+        <p class="hint">Cliquez n'importe où pour faire monter l'avion</p>
       </div>
 
       <!-- Game Over overlay (créé dynamiquement) -->

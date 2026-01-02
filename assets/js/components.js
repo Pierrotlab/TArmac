@@ -103,30 +103,10 @@ function initMemberInteractivity() {
                 }
             }
 
-            const wasActive = card.classList.contains('active'); 
-            
-            document.querySelectorAll('.member-card.active').forEach(otherCard => {
-                // Ferme toutes les cartes SAUF celle qui est cliquée.
-                if (otherCard !== card) {
-                    otherCard.classList.remove('active');
-                    otherCard.classList.remove('hover-active');
-                }
-            });
-
-            // Bascule l'état de la carte cliquée
-            if (wasActive) {
-                // Si elle était active, on la ferme
-                card.classList.remove('active');
-            } else {
-                // Si elle était fermée, on l'ouvre
-                card.classList.add('active');
-            }
-            
-            // Sécurité supplémentaire
+            card.classList.toggle('active');
             card.classList.remove('hover-active'); 
             
-            // Garder stopPropagation peut être nécessaire, mais si le problème persiste, 
-            // vous pouvez essayer de le commenter :
+
             event.stopPropagation(); 
         });
 
