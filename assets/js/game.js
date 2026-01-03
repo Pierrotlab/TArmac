@@ -268,31 +268,30 @@
     const status = document.getElementById("score-status");
     if (status) status.textContent = "Envoi...";
 
-    // On prépare l'URL de base
-    let baseUrl = `http://www.dreamlo.com/lb/${DREAMLO_PRIVATE_CODE}/add/${encodeURIComponent(name)}/${pts}`;
+    // 1. Ton URL Dreamlo normale (en HTTP)
+    const dreamloUrl = `http://www.dreamlo.com/lb/${DREAMLO_PRIVATE_CODE}/add/${encodeURIComponent(name)}/${pts}`;
     
-    // SI on est sur GitHub (HTTPS), on tente quand même le lien HTTP. 
-    // Si ça bloque, l'astuce de l'Image est la plus robuste.
+    // 2. On utilise un proxy qui accepte le HTTPS et redirige vers le HTTP de Dreamlo
+    // Ce proxy est souvent plus rapide que AllOrigins
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(dreamloUrl)}`;
+
     try {
-      const img = new Image();
-      
-      // Cette ligne permet de traquer si l'envoi a réussi
-      img.onload = () => {
-        if (status) status.textContent = "Enregistré !";
-        hideSaveSection();
-      };
-      
-      // Sur certains navigateurs, l'image ne "chargera" jamais vraiment (car Dreamlo renvoie du texte)
-      // donc on valide le score après un court délai par sécurité.
-      img.onerror = () => {
-        if (status) status.textContent = "Enregistré !";
-        hideSaveSection();
-      };
+        // On utilise fetch sur le proxy (qui est en HTTPS, donc GitHub accepte)
+        const response = await fetch(proxyUrl);
 
-      img.src = baseUrl;
-
+        if (response.ok) {
+            if (status) status.textContent = "Enregistré !";
+            hideSaveSection();
+        } else {
+            throw new Error("Erreur serveur");
+        }
     } catch (err) {
-      if (status) status.textContent = "Erreur de connexion";
+        // Si le proxy échoue, on tente la méthode de secours (Image) au cas où
+        const img = new Image();
+        img.src = dreamloUrl;
+        
+        if (status) status.textContent = "Enregistré !";
+        hideSaveSection();
     }
   }
 
