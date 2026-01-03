@@ -40,7 +40,7 @@
   pointer-events: auto;
 }
 
-/* --- ANIMATION DU TITRE (Nouveau) --- */
+
 .menu-overlay img#menu-title {
   width: 100%;
   height: auto;
@@ -48,7 +48,7 @@
   margin-bottom: 0;
   /* Animation de respiration douce */
   animation: pulseTitle 3s infinite ease-in-out;
-  filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 5px 15px rgba(255,255,255,0.9));
 }
 
 @keyframes pulseTitle {
@@ -114,7 +114,7 @@
   transform: scale(0.95);
 }
 
-/* Hint text - Correction : plus visible et en bas */
+
 .menu-overlay .hint {
   font-size: 14px;
   font-weight: 600;
@@ -122,7 +122,7 @@
   padding: 10px 18px;
   border-radius: 25px;
   color: #ffffff;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
   border: 1px solid rgba(255,255,255,0.2);
   max-width: 80%;
   margin-top: 0;
@@ -201,4 +201,66 @@
   font-size: 18px;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+
+.save-container {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+  justify-content: center;
+}
+
+#player-name {
+  background: white;
+  border: 2px solid #0D4E85;
+  border-radius: 6px;
+  padding: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  width: 150px;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+
+#player-name:focus {
+  box-shadow: 0 0 5px rgba(13, 78, 133, 0.3);
+  border-color: #2980b9;
+}
+
+.btn-send {
+  background: #0D4E85;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-send:active {
+  transform: scale(0.95);
+}
+
+
+.status-message {
+  font-size: 13px;
+  color: #fff;
+  height: 16px;
+  margin-bottom: 8px;
+}
+
+.go-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+
+.save-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #fff;
 }
