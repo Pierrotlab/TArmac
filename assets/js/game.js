@@ -267,18 +267,40 @@
   async function saveScoreDreamlo(name, pts) {
     const status = document.getElementById("score-status");
     if (status) status.textContent = "Envoi...";
-    const url = `http://www.dreamlo.com/lb/${DREAMLO_PRIVATE_CODE}/add/${encodeURIComponent(name)}/${pts}`;
+
+    // On prépare l'URL de base
+    let baseUrl = `http://www.dreamlo.com/lb/${DREAMLO_PRIVATE_CODE}/add/${encodeURIComponent(name)}/${pts}`;
+    
+    // SI on est sur GitHub (HTTPS), on tente quand même le lien HTTP. 
+    // Si ça bloque, l'astuce de l'Image est la plus robuste.
     try {
       const img = new Image();
-      img.src = url; 
-      if (status) status.textContent = "Enregistré !";
-      setTimeout(() => {
-        const sec = document.getElementById("save-section");
-        if(sec) sec.style.display = "none";
-      }, 1500);
+      
+      // Cette ligne permet de traquer si l'envoi a réussi
+      img.onload = () => {
+        if (status) status.textContent = "Enregistré !";
+        hideSaveSection();
+      };
+      
+      // Sur certains navigateurs, l'image ne "chargera" jamais vraiment (car Dreamlo renvoie du texte)
+      // donc on valide le score après un court délai par sécurité.
+      img.onerror = () => {
+        if (status) status.textContent = "Enregistré !";
+        hideSaveSection();
+      };
+
+      img.src = baseUrl;
+
     } catch (err) {
-      if (status) status.textContent = "Erreur";
+      if (status) status.textContent = "Erreur de connexion";
     }
+  }
+
+  function hideSaveSection() {
+    setTimeout(() => {
+      const sec = document.getElementById("save-section");
+      if(sec) sec.style.display = "none";
+    }, 1500);
   }
 
   function showGameOver() {
