@@ -31,11 +31,11 @@
   flex-direction: column;
   align-items: center;
   /* Correction : on passe en space-around pour remonter les avions et le titre */
-  justify-content: space-around; 
+  justify-content: space-between; 
   background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.2));
   color: #fff;
   z-index: 50;
-  padding: 30px 12px;
+  padding: 15px 12px;
   text-align: center;
   pointer-events: auto;
 }
@@ -45,8 +45,8 @@
   width: 100%;
   height: auto;
   display: block;
-  margin-bottom: 0;
-  /* Animation de respiration douce */
+  margin-bottom: -70px;
+  margin-top: -30px;
   animation: pulseTitle 3s infinite ease-in-out;
   filter: drop-shadow(0 5px 15px rgba(255,255,255,0.9));
 }
@@ -122,10 +122,13 @@
   padding: 10px 18px;
   border-radius: 25px;
   color: #ffffff;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.2);
   max-width: 80%;
-  margin-top: 0;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 @keyframes pulseHint {
@@ -223,6 +226,10 @@
   transition: box-shadow 0.2s;
 }
 
+#save-section {
+    transition: opacity 0.3s ease;
+}
+
 #player-name:focus {
   box-shadow: 0 0 5px rgba(13, 78, 133, 0.3);
   border-color: #2980b9;
@@ -263,4 +270,97 @@
   font-weight: 600;
   margin-bottom: 5px;
   color: #fff;
+}
+
+
+#mini-leaderboard {
+  width: 80%;
+  margin: 10px 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.mini-rank-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  color: #B8E6FE;
+}
+
+.mini-rank-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 3px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.mini-rank-item:last-child { border: none; }
+.mini-rank-item .rank { font-weight: bold; width: 25px; text-align: left; }
+.mini-rank-item .name { flex-grow: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini-rank-item .score { font-weight: bold; }
+.mini-rank-item:nth-child(1) .rank { color: #FFD700; }
+.mini-rank-item:nth-child(2) .rank { color: #C0C0C0; }
+.mini-rank-item:nth-child(3) .rank { color: #CD7F32; }
+
+.btn-link {
+  background: none; border: none; color: #fff;
+  text-decoration: underline; font-size: 12px;
+  cursor: pointer; margin-top: 8px; opacity: 0.8;
+}
+
+/* Overlay plein écran */
+.leaderboard-full {
+  position: absolute; inset: 0;
+  background: rgba(13, 78, 133, 0.98);
+  z-index: 100; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 20px;
+}
+
+.full-leaderboard-content { width: 100%; max-width: 300px; }
+.full-leaderboard-content h2 { margin-bottom: 20px; font-size: 22px; color: #FFD700; }
+
+.full-rank-item {
+  display: flex; justify-content: space-between;
+  padding: 8px 15px; background: rgba(255,255,255,0.1);
+  margin-bottom: 5px; border-radius: 6px;
+}
+
+#full-rank-list {
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+#close-leaderboard {
+    min-width: 100px;
+    border-radius: 30px;
+}
+
+
+/* Style du nouveau bouton de classement */
+.btn-ranking-view {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-ranking-view i {
+    color: #FFD700;
 }

@@ -25,12 +25,22 @@
 
     <!-- GAME START -->
     <div id="game-container">
-      <!-- canvas doit avoir des attributs width/height pour éviter 0x0 -->
       <canvas id="game-canvas" width="360" height="640" aria-label="Jeu Avoid the Birds"></canvas>
 
       <!-- Menu overlay (géré par le JS) -->
       <div id="menu" class="menu-overlay">
         <img id="menu-title" src="assets/images/jeu/nom_logo.png" alt="Title" />
+
+        <div id="mini-leaderboard">
+            <div class="mini-rank-title">TOP JOUEURS</div>
+            <div id="top3-list">
+                <div class="loading-ranks">Chargement...</div>
+            </div>
+            <button id="show-full-leaderboard" class="btn-ranking-view">
+              <i class="fa-solid fa-trophy"></i> Voir le top 10
+            </button>
+        </div>
+
         <div id="plane-select" class="plane-select">
           <button class="plane-option selected" data-plane="biplan" title="Biplan">
             <img src="assets/images/jeu/biplan.png" alt="biplan">
@@ -50,8 +60,16 @@
         <p class="hint">Cliquez n'importe où pour faire monter l'avion</p>
       </div>
 
+      <div id="full-leaderboard-overlay" class="leaderboard-full" style="display: none;">
+        <div class="full-leaderboard-content">
+          <h2>CLASSEMENT GÉNÉRAL</h2>
+          <div id="full-rank-list"></div>
+          <button id="close-leaderboard" class="go-btn secondary">Retour</button>
+        </div>
+      </div>
+
       <!-- Game Over overlay (créé dynamiquement) -->
-    </section>
+    </div>
     <!-- GAME END -->
 
   </main>
@@ -60,7 +78,7 @@
 
   <script src="assets/js/components.js"></script>
   <script src="assets/js/script.js"></script>
-  <script src="assets/js/game.js"></script>
+  <script src="assets/js/game.js" type="module"></script>
   <script>
     // Lance le processus après que le DOM soit complètement chargé (pour un F5)
     document.addEventListener("DOMContentLoaded", () => {
@@ -68,6 +86,14 @@
             window.startGameEngine(); 
         }
     });
-</script>
+  </script>
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+        "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+      }
+    }
+  </script>
 </body>
 </html>

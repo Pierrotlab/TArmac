@@ -1,10 +1,22 @@
+// --- IMPORTATION FIREBASE ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, set, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+
+// --- CONFIGURATION FIREBASE---
+const firebaseConfig = {
+  databaseURL: "https://jeutarmac-default-rtdb.europe-west1.firebasedatabase.app/"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+
 (function () {
   // ================= CONFIG =================
   const ASSETS_PATH = "assets/images/jeu/";
   const BASE_W = 360;
   const BASE_H = 640;
-  const DREAMLO_PUBLIC_CODE = "69594fe88f40bccf80d2be5e";
-  const DREAMLO_PRIVATE_CODE = "s-Xdt5B5vUmev4aAn0nvMwVg_QviETTkO80SGjB4FN2g";
 
   // ================= PHYSICS =================
   const GRAVITY = 0.7;
@@ -39,7 +51,7 @@
   // ================= IMAGES =================
   const images = {};
   const assets = [
-    ["bg", ASSETS_PATH + "fond_ciel.gif"],
+    ["bg", ASSETS_PATH + "fond_ciel.png"],
     ["oiseau1", ASSETS_PATH + "oiseau_1.png"],
     ["oiseau2", ASSETS_PATH + "oiseau_2.png"],
     ["oiseau3", ASSETS_PATH + "oiseau_3.png"],
@@ -107,6 +119,15 @@
     };
     window.addEventListener("keydown", handlers.onKeyDown);
     window.addEventListener("resize", resize);
+
+    document.getElementById("show-full-leaderboard").onclick = () => {
+        document.getElementById("full-leaderboard-overlay").style.display = "flex";
+    };
+    document.getElementById("close-leaderboard").onclick = () => {
+        document.getElementById("full-leaderboard-overlay").style.display = "none";
+    };
+
+    updateLeaderboards();
 
     return true;
   }
@@ -263,56 +284,85 @@
     countdownText = "3"; inMenu = false; running = false;
   }
 
-  // ================= DREAMLO INTEGRATION =================
-  async function saveScoreDreamlo(name, pts) {
-    const status = document.getElementById("score-status");
-    if (status) status.textContent = "Envoi...";
 
-    // On prépare l'URL de base
-    let baseUrl = `http://www.dreamlo.com/lb/${DREAMLO_PRIVATE_CODE}/add/${encodeURIComponent(name)}/${pts}`;
-    
-    // SI on est sur GitHub (HTTPS), on tente quand même le lien HTTP. 
-    // Si ça bloque, l'astuce de l'Image est la plus robuste.
-    try {
-      const img = new Image();
-      
-      // Cette ligne permet de traquer si l'envoi a réussi
-      img.onload = () => {
-        if (status) status.textContent = "Enregistré !";
-        hideSaveSection();
-      };
-      
-      // Sur certains navigateurs, l'image ne "chargera" jamais vraiment (car Dreamlo renvoie du texte)
-      // donc on valide le score après un court délai par sécurité.
-      img.onerror = () => {
-        if (status) status.textContent = "Enregistré !";
-        hideSaveSection();
-      };
+  // --- FONCTION DE SAUVEGARDE (Version Firebase) ---
+  async function saveScoreFirebase(name, pts, timeInMs) {
+      const status = document.getElementById("score-status");
+      if (status) status.textContent = "Envoi...";
 
-      img.src = baseUrl;
+      try {
+          const scoreListRef = ref(db, 'leaderboard');
+          const newScoreRef = push(scoreListRef);
+          
+          await set(newScoreRef, {
+              username: name,
+              score: pts,
+              duration_ms: Math.floor(timeInMs),
+              timestamp: Date.now()
+          });
 
-    } catch (err) {
-      if (status) status.textContent = "Erreur de connexion";
+          if (status) status.textContent = "Enregistré !";
+          
+          updateLeaderboards();
+          hideSaveSection();
+
+      } catch (error) {
+          if (status) status.textContent = "Erreur de connexion";
+          console.error("Détail erreur Firebase:", error);
+      }
+  }
+
+  function hideSaveSection() {
+    const sec = document.getElementById("save-section");
+    if (sec) {
+        sec.style.opacity = "0";
+        setTimeout(() => {
+            sec.style.display = "none";
+        }, 300);
     }
   }
 
-  function hideSaveSection() {
-    setTimeout(() => {
-      const sec = document.getElementById("save-section");
-      if(sec) sec.style.display = "none";
-    }, 1500);
+  async function updateLeaderboards() {
+    const scoreRef = ref(db, 'leaderboard');
+    // On prend les 10 meilleurs scores
+    const q = query(scoreRef, orderByChild('score'), limitToLast(10));
+    
+    try {
+        const snapshot = await get(q);
+        let scores = [];
+        snapshot.forEach(child => { scores.push(child.val()); });
+        scores.reverse(); // Du plus grand au plus petit
+
+        // Mise à jour du Mini Top 3
+        const top3List = document.getElementById("top3-list");
+        if (top3List) {
+            top3List.innerHTML = scores.slice(0, 3).map((s, i) => `
+                <div class="mini-rank-item">
+                    <span class="rank">#${i+1}</span>
+                    <span class="name">${s.username}</span>
+                    <span class="score">${Math.floor(s.score)}</span>
+                </div>
+            `).join('') || "Aucun score";
+        }
+
+        // Mise à jour du Top 10 Complet
+        const fullList = document.getElementById("full-rank-list");
+        if (fullList) {
+            fullList.innerHTML = scores.map((s, i) => `
+                <div class="full-rank-item">
+                    <span><b>${i+1}.</b> ${s.username}</span>
+                    <span>${Math.floor(s.score)} pts</span>
+                </div>
+            `).join('') || "Aucun score";
+        }
+    } catch (e) { console.error(e); }
   }
 
-  function hideSaveSection() {
-    setTimeout(() => {
-      const sec = document.getElementById("save-section");
-      if(sec) sec.style.display = "none";
-    }, 1500);
-  }
 
   function showGameOver() {
     if (container.querySelector(".go-overlay")) return;
     const finalScore = Math.floor(score);
+    const finalElapsed = elapsed;
     const go = document.createElement("div");
     go.className = "go-overlay";
     
@@ -341,7 +391,7 @@
     // Événements
     document.getElementById("btn-save").onclick = () => {
       const name = document.getElementById("player-name").value.trim();
-      if(name) saveScoreDreamlo(name, finalScore);
+      if(name) saveScoreFirebase(name, finalScore, finalElapsed);
     };
     
     document.getElementById("btn-replay").onclick = () => { go.remove(); startGame(); };
