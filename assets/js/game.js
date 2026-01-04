@@ -1,7 +1,6 @@
 // --- IMPORTATION FIREBASE ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, set, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+import { getDatabase, ref, push, set, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 // --- CONFIGURATION FIREBASE---
 const firebaseConfig = {
@@ -12,7 +11,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 
-(function () {
+
   // ================= CONFIG =================
   const ASSETS_PATH = "assets/images/jeu/";
   const BASE_W = 360;
@@ -415,5 +414,6 @@ const db = getDatabase(app);
         if (!loopId) loopId = requestAnimationFrame(loop);
     }
   }
-  window.startGameEngine = startGameEngine;
-})();
+  
+window.startGameEngine = startGameEngine;
+export { startGameEngine };

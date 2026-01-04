@@ -78,22 +78,24 @@
 
   <script src="assets/js/components.js"></script>
   <script src="assets/js/script.js"></script>
-  <script src="assets/js/game.js" type="module"></script>
-  <script>
-    // Lance le processus après que le DOM soit complètement chargé (pour un F5)
-    document.addEventListener("DOMContentLoaded", () => {
-        if (typeof window.startGameEngine === 'function') {
-            window.startGameEngine(); 
+
+  <script type="module">
+    import { startGameEngine } from './assets/js/game.js';
+
+    const init = () => {
+        if (typeof startGameEngine === 'function') {
+            startGameEngine();
+        } else {
+            setTimeout(init, 100);
         }
-    });
-  </script>
-  <script type="importmap">
-    {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
-        "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
-      }
+    };
+
+    if (document.readyState === 'complete') {
+        init();
+    } else {
+        window.addEventListener('load', init);
     }
   </script>
+  
 </body>
 </html>

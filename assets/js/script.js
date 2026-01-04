@@ -8,7 +8,8 @@ function initMobileMenu() {
     const menuIcon = document.getElementById('menu-icon');
 
     if (menuToggle && mainNav && menuIcon) {
-        menuToggle.addEventListener('click', () => {
+        menuToggle.addEventListener('click', (event) => {
+            event.stopPropagation();
             if (mainNav.classList.contains('active')) {
                 closeMobileMenu(); 
             } else {
@@ -189,9 +190,8 @@ function initGame() {
     if (typeof window.startGameEngine === 'function') {
         window.startGameEngine();
     } else {
-        const script = document.createElement('script');
-        script.src = 'assets/js/game.js';
-        script.onload = () => window.startGameEngine();
-        document.body.appendChild(script);
+        import('./game.js').then(module => {
+            if (module.startGameEngine) module.startGameEngine();
+        }).catch(err => console.error("Erreur chargement moteur jeu:", err));
     }
 }
