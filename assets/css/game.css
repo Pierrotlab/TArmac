@@ -348,52 +348,53 @@
 
 /* Style du nouveau bouton de classement */
 .btn-ranking-view {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #fff;
-    padding: 6px 15px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-ranking-view i {
-    color: #FFD700;
+  color: #FFD700;
 }
 
 
 
 
 .game-header {
-    text-align: center;
-    padding: 20px 20px 0px 20px;
-    color: #154360;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  color: #154360;
 }
 
 .game-header h1 {
-    font-family: 'Black Ops One';
-    font-weight: 400;
-    font-size: 2.5rem;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  font-family: 'Black Ops One';
+  font-weight: 400;
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .game-header h1 span {
-    color: #C0392B;
-    font-weight: bold;
+  display: block;
+  color: #C0392B;
 }
 
 .game-header p {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 500;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
