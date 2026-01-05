@@ -5,7 +5,7 @@
   position: relative;
   width: 100%;
   max-width: 420px; /* s'adapte aux mobiles */
-  margin: 20px auto;
+  margin: 40px auto;
   aspect-ratio: 9 / 16; /* conserve ratio approximatif (360x640) */
   border-radius: 12px;
   overflow: hidden;
@@ -94,19 +94,20 @@
   transform: scale(1.1);
 }
 
-/* Play button */
 .btn-play {
   background: #0D4E85;
   color: white;
   border: none;
-  padding: 14px 24px;
-  font-size: 20px;
-  font-weight: bold;
-  border-radius: 12px;
+  padding: 13px 20px;
+  font-family: 'Black Ops One'; 
+  font-size: 22px;
+  border-radius: 50px;
   cursor: pointer;
   min-width: 180px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  transition: background 0.2s, transform 0.1s;
+  letter-spacing: 3px;
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(13, 78, 133, 0.3);
+  transition: all 0.3s ease;
 }
 
 .btn-play:active {
@@ -162,11 +163,10 @@
 .go-overlay .go-score {
   font-size: 20px;
   font-weight: 700;
-  margin-bottom: 15px;
+  margin-bottom: 30px;
   color: #FFD700;
 }
 
-/* Buttons in go-overlay */
 .go-btn {
   padding: 12px 20px;
   border-radius: 10px;
@@ -175,6 +175,10 @@
   min-width: 130px;
   font-size: 16px;
   font-weight: 600;
+}
+
+.go-btn:active{
+  transform: scale(0.95);
 }
 
 .go-btn.primary {
@@ -187,7 +191,7 @@
   color: #fff;
 }
 
-/* Chrono element (absolute top center) */
+
 #scoretext {
   display: none;
   position: absolute;
@@ -363,4 +367,33 @@
 
 .btn-ranking-view i {
     color: #FFD700;
+}
+
+
+
+
+.game-header {
+    text-align: center;
+    padding: 20px 20px 0px 20px;
+    color: #154360;
+}
+
+.game-header h1 {
+    font-family: 'Black Ops One';
+    font-weight: 400;
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.game-header h1 span {
+    color: #C0392B;
+    font-weight: bold;
+}
+
+.game-header p {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 500;
 }

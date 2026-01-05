@@ -10,8 +10,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-
-
   // ================= CONFIG =================
   const ASSETS_PATH = "assets/images/jeu/";
   const BASE_W = 360;
@@ -23,9 +21,9 @@ const db = getDatabase(app);
   const MAX_VY = 5;
 
   // ================= SPAWN & DIFFICULTY =================
-  const INITIAL_SPAWN_INTERVAL = 1600; 
-  const MIN_SPAWN_INTERVAL = 600;      
-  const DIFFICULTY_RAMP_MS = 60000;    
+  const INITIAL_SPAWN_INTERVAL = 1200; 
+  const MIN_SPAWN_INTERVAL = 300;      
+  const DIFFICULTY_RAMP_MS = 80000;    
 
   // ================= STATE =================
   let canvas, ctx, container;
@@ -35,7 +33,7 @@ const db = getDatabase(app);
   let inMenu = true;
   let isTransitioning = false; 
   let transitionX = 0;          
-  let transitionTimer = 0;     
+  let transitionTimer = 0;      
   let countdownText = "";      
   let player = null;
   let enemies = []; 
@@ -111,9 +109,15 @@ const db = getDatabase(app);
     canvas.addEventListener("pointerdown", handlers.onCanvasPointerDown);
 
     handlers.onKeyDown = e => {
-      if (e.code === "Space" || e.code === "ArrowUp") {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          return;
+      }
+
+      if (e.code === "Space") {
         e.preventDefault();
-        if (inMenu) startGame(); else flap();
+        if (!inMenu && running && player && player.alive) {
+          flap();
+        }
       }
     };
     window.addEventListener("keydown", handlers.onKeyDown);
@@ -159,25 +163,39 @@ const db = getDatabase(app);
     ctx.imageSmoothingEnabled = false;
   }
 
-  function createPlayer() { return { x: BASE_W * 0.7, y: BASE_H * 0.45, w: 72, h: 54, vy: 0, alive: true }; }
+  function createPlayer() { return { x: BASE_W * 0.8, y: BASE_H * 0.45, w: 72, h: 54, vy: 0, alive: true }; }
   function flap() { if (!player || !player.alive || isTransitioning) return; player.vy = FLAP; }
 
   function spawnEnemy() {
-    const diffRatio = Math.min(1, elapsed / DIFFICULTY_RAMP_MS);
+    let rawRatio = Math.min(1, elapsed / DIFFICULTY_RAMP_MS);
+    let diffRatio = Math.pow(rawRatio, 0.8); 
+
+    const baseSpeed = 2.5 + (diffRatio * 5.5);
+    const individualSpeed = baseSpeed + (Math.random() * 1.5);
+
     let y;
-    if (Math.random() < 0.7 && player) {
-        const spread = 150 - (diffRatio * 100);
+    if (Math.random() < 0.9 && player) {
+        const spread = 120; 
         y = player.y + (Math.random() - 0.5) * spread;
+
+        // PROTECTION ANTI-CHEAP DEATH : Si l'oiseau spawn trop sur l'avion, on le décale
+        if (Math.abs(y - player.y) < 25) {
+            y += (y > player.y) ? 30 : -30; 
+        }
+
+        y = Math.max(50, Math.min(BASE_H - 50, y));
     } else {
         y = Math.random() * (BASE_H - 100) + 50;
     }
-    y = Math.max(50, Math.min(BASE_H - 50, y));
-    const baseSpeed = 2.5 + (diffRatio * 2.5);
-    const individualSpeed = baseSpeed + (Math.random() * 1.5);
 
     enemies.push({
-      x: -60, y: y, w: 60, h: 60, speed: individualSpeed,
-      frame: Math.floor(Math.random() * 4) + 1, animTimer: Math.random() * 100
+      x: -60, 
+      y: y, 
+      w: 60, 
+      h: 60, 
+      speed: individualSpeed,
+      frame: Math.floor(Math.random() * 4) + 1,
+      animTimer: Math.random() * 100
     });
   }
 
@@ -261,9 +279,21 @@ const db = getDatabase(app);
       player.vy += GRAVITY * speedCorr;
       player.y += player.vy * speedCorr;
       if (player.y < -50 || player.y > BASE_H + 50) { running = false; showGameOver(); }
+      
+      // LOGIQUE DE SPAWN VARIABLE (Rafales)
       spawnAcc += dt;
       const currentSpawnInterval = Math.max(MIN_SPAWN_INTERVAL, INITIAL_SPAWN_INTERVAL - (elapsed / DIFFICULTY_RAMP_MS) * (INITIAL_SPAWN_INTERVAL - MIN_SPAWN_INTERVAL));
-      if (spawnAcc > currentSpawnInterval) { spawnAcc = 0; spawnEnemy(); }
+      
+      if (spawnAcc > currentSpawnInterval) { 
+        spawnEnemy();
+        // 30% de chance de déclencher un double spawn immédiat (rafale)
+        if (Math.random() < 0.3) {
+            spawnAcc = currentSpawnInterval - 150; 
+        } else {
+            spawnAcc = 0;
+        }
+      }
+
       score += dt * 0.01; 
       if (scoreEl) scoreEl.textContent = Math.floor(score);
       updateEnemies(dt);
@@ -372,7 +402,7 @@ const db = getDatabase(app);
       <div id="save-section">
         <div class="save-label">Enregistre ton score :</div>
         <div class="save-container">
-          <input type="text" id="player-name" placeholder="Nom" maxlength="13" oninput="this.value = this.value.replace(/[^a-zA-Z0-9 ]/g, '')">
+          <input type="text" id="player-name" placeholder="Nom" maxlength="15">
           <button id="btn-save" class="btn-send">Envoyer</button>
         </div>
       </div>
@@ -386,6 +416,13 @@ const db = getDatabase(app);
     `;
     
     container.appendChild(go);
+
+    document.getElementById("player-name").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const name = e.target.value.trim();
+        if(name) saveScoreFirebase(name, finalScore, finalElapsed);
+      }
+    });
 
     // Événements
     document.getElementById("btn-save").onclick = () => {
