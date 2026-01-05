@@ -50,12 +50,17 @@ function handleScrollHeader() {
     }
 
     const currentScrollY = window.scrollY;
-    if (currentScrollY > lastScrollY && currentScrollY > 100) { 
-        mainHeader.classList.add('header-hidden');
-    } else if (currentScrollY < lastScrollY) {
-        mainHeader.classList.remove('header-hidden');
+    const threshold = 10;
+    const diff = currentScrollY - lastScrollY;
+
+    if (Math.abs(diff) > threshold) {
+        if (diff > 0 && currentScrollY > 100) { 
+            mainHeader.classList.add('header-hidden');
+        } else {
+            mainHeader.classList.remove('header-hidden');
+        }
+        lastScrollY = currentScrollY;
     }
-    lastScrollY = currentScrollY;
 }
 
 function initHeaderInteractivity() {
